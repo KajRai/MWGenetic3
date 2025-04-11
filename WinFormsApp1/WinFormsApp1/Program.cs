@@ -266,3 +266,45 @@ private double[] TournamentSelection()
 
     return (double[])population[bestIndex].Clone();
 }
+
+    private double[] Crossover(double[] parent1, double[] parent2)
+    {
+        double[] child = new double[WeightsCount];
+
+        // krzyzowanie 
+        int crossoverPoint = random.Next(WeightsCount);
+
+        for (int i = 0; i < WeightsCount; i++)
+        {
+            if (i < crossoverPoint)
+            {
+                child[i] = parent1[i];
+            }
+            else
+            {
+                child[i] = parent2[i];
+            }
+        }
+
+        return child;
+    }
+
+    private void Mutate(double[] individual)
+    {
+        for (int i = 0; i < WeightsCount; i++)
+        {
+            if (random.NextDouble() < MutationRate)
+            {
+                // dodanie ma³ej wartosci do mutacji
+                individual[i] += (WeightMax - WeightMin) * (random.NextDouble() * 2 - 1) * 0.1;
+
+                // kontrola na wypadek za duzej wartosci 
+                individual[i] = Math.Max(WeightMin, Math.Min(WeightMax, individual[i]));
+            }
+        }
+    }
+
+    private void LogGenerationInfo(int generation)
+    {
+        LogMessage($"Generacja: {generation}: Najlepsza dokladnoœæ = {fitness[0]:F6}, Œrednia dok³adnoœæ = {avgFitnessList.Last():F6}");
+    }
