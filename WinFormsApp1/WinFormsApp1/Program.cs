@@ -221,4 +221,48 @@ namespace XorNeuralNetworkGA
 
         return sumSquaredError;
     }
+
+private double FeedForward(double input1, double input2, double[] weights)
+{
+    // ukryte neurony do sigmoidow
+    double h1 = Sigmoid(input1 * weights[0] + input2 * weights[1] + weights[2]); // peirwszy ukryty neuron
+    double h2 = Sigmoid(input1 * weights[3] + input2 * weights[4] + weights[5]); // drugi neuron ukryty
+
+    // Hidden to output layer
+    double output = Sigmoid(h1 * weights[6] + h2 * weights[7] + weights[8]); // wyjscie neuronow
+
+    return output;
+}
+
+private double Sigmoid(double x) // sigmoidy
+{
+    return 1.0 / (1.0 + Math.Exp(-x));
+}
+
+private void SortPopulationByFitness()
+{
+    // sortowanie po najlepszym dostosowaniu
+    Array.Sort(fitness, population);
+}
+
+private double[] TournamentSelection()
+{
+   
+    int[] tournamentIndices = new int[TournamentSize];
+    for (int i = 0; i < TournamentSize; i++)
+    {
+        tournamentIndices[i] = random.Next(PopulationSize);
+    }
+
+    // najlepsze jednostki do turnieju
+    int bestIndex = tournamentIndices[0];
+    for (int i = 1; i < TournamentSize; i++)
+    {
+        if (fitness[tournamentIndices[i]] < fitness[bestIndex])
+        {
+            bestIndex = tournamentIndices[i];
+        }
+    }
+
+    return (double[])population[bestIndex].Clone();
 }
