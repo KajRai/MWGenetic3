@@ -167,5 +167,58 @@ namespace XorNeuralNetworkGA
             chart.Invalidate();
         }
     }
-}
+    private void InitializePopulation() //medoda do inicjalizacji populacji
+    {
+        population = new double[PopulationSize][];
+        fitness = new double[PopulationSize];
+
+        for (int i = 0; i < PopulationSize; i++)
+        {
+            population[i] = new double[WeightsCount];
+            for (int j = 0; j < WeightsCount; j++)
+            {
+                population[i][j] = WeightMin + (WeightMax - WeightMin) * random.NextDouble();
+            }
+        }
+
+        LogMessage("Populacja zainicjowana");
+    }
+
+    private void EvaluatePopulation()
+    {
+        double totalFitness = 0;
+
+        for (int i = 0; i < PopulationSize; i++)
+        {
+            fitness[i] = CalculateFitness(population[i]);
+            totalFitness += fitness[i];
+        }
+
+        // srednia dok³adnoœæ
+        double avgFitness = totalFitness / PopulationSize;
+        avgFitnessList.Add(avgFitness);
+
+        // test dok³adnoœci
+        double bestFitness = fitness.Min();
+        bestFitnessList.Add(bestFitness);
+    }
+
+    private double CalculateFitness(double[] weights)
+    {
+        double sumSquaredError = 0;
+
+        // wynik dla 4 xorów
+        for (int sample = 0; sample < 4; sample++)
+        {
+            double input1 = xorInputs[sample * 2];
+            double input2 = xorInputs[sample * 2 + 1];
+            double target = xorTargets[sample];
+
+            double output = FeedForward(input1, input2, weights);
+            double error = target - output;
+            sumSquaredError += error * error;
+        }
+
+        return sumSquaredError;
+    }
 }
