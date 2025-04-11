@@ -30,5 +30,142 @@ namespace XorNeuralNetworkGA
         private List<double> bestFitnessList = new List<double>();
         private List<double> avgFitnessList = new List<double>();
 
+
+        public MainForm()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            this.btnStart = new System.Windows.Forms.Button();
+            this.txtOutput = new System.Windows.Forms.RichTextBox();
+            this.chart = new System.Windows.Forms.PictureBox();
+            this.SuspendLayout();
+            // 
+            // przycisk startu
+            // 
+            this.btnStart.Location = new System.Drawing.Point(12, 12);
+            this.btnStart.Name = "btnStart";
+            this.btnStart.Size = new System.Drawing.Size(165, 30);
+            this.btnStart.TabIndex = 0;
+            this.btnStart.Text = "Rozpocznij algorytm";
+            this.btnStart.UseVisualStyleBackColor = true;
+            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            // 
+            // wypisanie
+            // 
+            this.txtOutput.Location = new System.Drawing.Point(12, 48);
+            this.txtOutput.Name = "txtOutput";
+            this.txtOutput.Size = new System.Drawing.Size(450, 250);
+            this.txtOutput.TabIndex = 1;
+            this.txtOutput.Text = "";
+            // 
+            // okreslenie wykresu
+            // 
+            this.chart.Location = new System.Drawing.Point(12, 310);
+            this.chart.Name = "chart";
+            this.chart.Size = new System.Drawing.Size(450, 250);
+            this.chart.TabIndex = 2;
+            this.chart.TabStop = false;
+            this.chart.Paint += new System.Windows.Forms.PaintEventHandler(this.chart_Paint);
+            // 
+            // glowne okienko
+            // 
+            this.ClientSize = new System.Drawing.Size(474, 572);
+            this.Controls.Add(this.chart);
+            this.Controls.Add(this.txtOutput);
+            this.Controls.Add(this.btnStart);
+            this.Name = "MainForm";
+            this.Text = "XOR Algorytm sieci neuronowej";
+            this.ResumeLayout(false);
+        }
+
+        private Button btnStart;
+        private RichTextBox txtOutput;
+        private PictureBox chart;
+
+        private void btnStart_Click(object sender, EventArgs e) //akcja startowa 
+        {
+            txtOutput.Clear();
+            bestFitnessList.Clear();
+            avgFitnessList.Clear();
+
+            // inicjacja metody populacyjnej
+            InitializePopulation();
+
+            // sprawdzenie pierwszej populacji
+            EvaluatePopulation();
+
+            // sprawdzenie pierwszej populacji
+            SortPopulationByFitness();
+
+            LogGenerationInfo(0);
+
+            // odpalenie algorytmu
+            for (int generation = 1; generation <= MaxGenerations; generation++)
+            {
+                // nowa populacja
+                double[][] newPopulation = new double[PopulationSize][];
+
+                // najlepsze wyjscia
+                newPopulation[0] = (double[])population[0].Clone();
+
+
+                for (int i = 1; i < PopulationSize; i++)
+                {
+                    // wybranie dwoch osobnikow do turnieju
+                    double[] parent1 = TournamentSelection();
+                    double[] parent2 = TournamentSelection();
+
+                    // nowe dziecko
+                    double[] child;
+                    if (random.NextDouble() < CrossoverRate)
+                    {
+                        child = Crossover(parent1, parent2);
+                    }
+                    else
+                    {
+                        child = (double[])parent1.Clone();
+                    }
+
+
+                    Mutate(child);
+
+                    // dodanie nowego dziecka do populacji
+                    newPopulation[i] = child;
+                }
+
+
+                population = newPopulation; //nowa populacja podstawiona za stara
+
+                // powtorne sprawdzenie
+                EvaluatePopulation();
+
+                // inicjacja metody sortowania
+                SortPopulationByFitness();
+
+                // wypisanie danych co 10 - mo¿e byc za du¿o? 
+                if (generation % 10 == 0 || generation == MaxGenerations)
+                {
+                    LogGenerationInfo(generation);
+                }
+
+                // test czy nie jestesmy w punkcie najlepszego rozwiazania
+                if (fitness[0] < 0.0001)
+                {
+                    LogMessage($"Najlepsze rozwiazanie zostalo znalezione w generacji: {generation}");
+                    break;
+                }
+            }
+
+            // test najlepszego rozwiazania
+            double[] bestSolution = population[0];
+            TestSolution(bestSolution);
+
+            //nowy wykres jezeli tak
+            chart.Invalidate();
+        }
     }
+}
 }
